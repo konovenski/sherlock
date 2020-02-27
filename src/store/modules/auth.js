@@ -38,7 +38,7 @@ const actions = {
     [AUTH_LOGOUT]: ({commit}) => {
         return new Promise(resolve => {
             commit(AUTH_LOGOUT);
-            localStorage.removeItem("credentials");
+            localStorage.clear();
             resolve();
         });
     }

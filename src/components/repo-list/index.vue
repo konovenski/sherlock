@@ -8,6 +8,7 @@
                     <label>{{repo.full_name}}</label>
                 </div>
                 <hr/>
+                <input type="date" v-model="date"/> <br><br>
                 <button type="submit"> Submit</button>
             </form>
             <button v-on:click="getRepos">Refresh list</button>
@@ -23,9 +24,10 @@
         name: "repo-list",
         data() {
             return {
-                loading:false,
+                loading: false,
                 repos: this.$store.getters.repos || [],
                 selected: [],
+                date: "",
             }
         },
         methods: {
@@ -41,11 +43,14 @@
             },
             inspect: function () {
                 const selected = this.selected;
-                this.$router.push({name: "UserList", query: {repos: selected}});
+                const date = this.date;
+                this.$router.push({name: "UserList", query: {repos: selected, date: date}});
             }
         },
         created() {
-            this.getRepos();
+            if (!this.$store.getters.cached) {
+                this.getRepos();
+            }
         }
     }
 </script>

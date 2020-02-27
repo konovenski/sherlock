@@ -1,2 +1,3 @@
 export const COMMIT_REQUEST = "COMMIT_REQUEST";
+export const COMMIT_SUCCESS = "COMMIT_SUCCESS";
 

@@ -12,7 +12,7 @@ const state = {
 };
 
 const getters = {
-    isUploaded: state => !!state.repos,
+    cached: state => !!state.repos,
     repos: state => state.repos,
 };
 
@@ -41,13 +41,14 @@ const actions = {
 
                 repos = [...repos, ...parseRepos(response)];
                 localStorage.setItem("repos", JSON.stringify(repos));
-                commit(REPOS_SUCCESS, repos);
+                await commit(REPOS_SUCCESS, repos);
             } catch (e) {
                 localStorage.removeItem("repos");
                 throw e;
             }
         }
         while ((repos.length === pagelen) && page++);
+
         return repos;
     },
 

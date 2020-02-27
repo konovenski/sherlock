@@ -24,15 +24,15 @@
                         <h2>Commits</h2>
                         <b-col>
                             <b-row v-for="commit in row.item.commits" v-bind:key="commit.hash">
-                                <a :href="commit.links.html.href"
-                                   target="_blank">{{commit.summary.raw.substr(0,50)}}...</a>
+                                {{hoursAgo(commit.date)}} hours ago: <a :href="commit.link"
+                                                                        target="_blank">{{commit.message.substr(0,50)}}...</a>
                             </b-row>
                         </b-col>
                         <h2>Merges</h2>
                         <b-col>
                             <b-row v-for="merge in row.item.merges" v-bind:key="merge.hash">
-                                {{hoursAgo(merge.date)}} hours ago: <a :href="merge.links.html.href"
-                                   target="_blank">{{merge.summary.raw.substr(0,50)}}...</a>
+                                {{hoursAgo(merge.date)}} hours ago: <a :href="merge.link"
+                                                                       target="_blank">{{merge.message.substr(0,50)}}...</a>
                             </b-row>
                         </b-col>
                     </b-card>
@@ -47,17 +47,16 @@
 <script>
     import {COMMIT_REQUEST} from "actions/commit";
 
-    function isToday(date) {
-        const dateToCheck = new Date(date).toDateString();
-        const currentDate = new Date().toDateString();
-        return true;
-        return currentDate === dateToCheck;
+    function dayDiff(date) {
+        const now = new Date().getTime();
+        return parseInt((now - date.getTime()) / 1000 / 60 / 60 / 24);
     }
 
     export default {
         name: "user-list",
         data() {
             let repos = this.$route.query.repos || [];
+            const date = new Date(this.$route.query.date || null);
             if (!Array.isArray(repos) && repos) {
                 repos = [repos];
             }
@@ -65,7 +64,8 @@
                 loading: false,
                 fields: ['name', 'commits', 'merges', '+'],
                 repos: repos,
-                users: {list: [], total: {commits: 0, merges: 0}}
+                users: {list: [], total: {commits: 0, merges: 0}},
+                date: date
             }
         },
         methods: {
@@ -73,28 +73,30 @@
                 const givenDate = new Date(date).getTime();
                 const now = new Date().getTime();
 
-                return parseInt((now - givenDate)/1000/60/60);
+                return parseInt((now - givenDate) / 1000 / 60 / 60);
             },
             list: async function () {
                 this.loading = true;
-                let commits = [];
                 for (const repo of this.repos) {
-                    const repoCommits = await this.$store
-                        .dispatch(COMMIT_REQUEST, {user: this.$store.getters.credentials, repo: repo});
-                    commits = [...commits, ...repoCommits];
-
+                    await this.$store
+                        .dispatch(COMMIT_REQUEST, {
+                            user: this.$store.getters.credentials,
+                            repo: repo, maxDays: dayDiff(this.date) + 1,
+                        });
                 }
+
+                const commits = Object.values(this.$store.getters.commits).flat().filter((el) => {
+                    return new Date(el.date).toDateString() === this.date.toDateString();
+                });
 
                 const users = {};
                 let summary = {
-                    commits:0,
-                    merges:0
+                    commits: 0,
+                    merges: 0
                 };
+
                 for (const el of commits) {
-                    if (!isToday(el.date)) {
-                        continue;
-                    }
-                    const name = el.author.raw;
+                    const name = el.author;
                     if (!users[name]) {
                         users[name] = {name: name, commits: [], merges: []};
                     }
