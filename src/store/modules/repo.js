@@ -17,28 +17,38 @@ const getters = {
 };
 
 function parseRepos(response) {
-    return response.data.values.map(element => element.repository);
+    return response.data.values.map(element => {
+        return {
+            full_name: element.repository.full_name,
+            uuid: element.repository.uuid
+        }
+    });
 }
 
 
 const actions = {
-    [REPOS_REQUEST]: ({commit}, user) => {
-        return new Promise((resolve, reject) => {
-            axios
-                .get("https://api.bitbucket.org/2.0/user/permissions/repositories?pagelen=100", {
-                    auth: user
-                })
-                .then(function(response) {
-                    const repos = parseRepos(response);
-                    localStorage.setItem("repos", JSON.stringify(repos));
-                    commit(REPOS_SUCCESS, repos);
-                    resolve(repos);
-                })
-                .catch(err => {
-                    localStorage.removeItem("repos");
-                    reject(err);
-                });
-        });
+    [REPOS_REQUEST]: async ({commit}, user) => {
+        let page = 1;
+        let repos = [];
+        const pagelen = 100;
+
+        do {
+            try {
+                const uri = `https://api.bitbucket.org/2.0/user/`
+                    + `permissions/repositories?pagelen=${pagelen}&page=${page}`;
+                const response = await axios
+                    .get(uri, {auth: user});
+
+                repos = [...repos, ...parseRepos(response)];
+                localStorage.setItem("repos", JSON.stringify(repos));
+                commit(REPOS_SUCCESS, repos);
+            } catch (e) {
+                localStorage.removeItem("repos");
+                throw e;
+            }
+        }
+        while ((repos.length === pagelen) && page++);
+        return repos;
     },
 
     [REPOS_CLEANUP]: ({commit}) => {
