@@ -24,6 +24,7 @@ const ifAuthenticated = (to, from, next) => {
 };
 
 export default new Router({
+    base: "/sherlock",
     mode: "history",
     routes: [
         {
