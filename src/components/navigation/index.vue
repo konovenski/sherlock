@@ -6,6 +6,10 @@
       <li v-if="isAuthenticated" @click="logout">
         <span class="logout">Logout</span>
       </li>
+      <li v-if="isAuthenticated" @click="repos">
+        <span class="logout">Repos</span>
+      </li>
+
     </ul>
   </div>
 </template>
@@ -52,6 +56,9 @@ export default {
   methods: {
     logout: function() {
       this.$store.dispatch(AUTH_LOGOUT).then(() => this.$router.push("/login"));
+    },
+    repos: function() {
+      this.$router.push("/repos");
     }
   },
   computed: {

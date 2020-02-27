@@ -34,7 +34,8 @@
                 }
             },
             inspect: function () {
-                this.$router.push("/repos");
+                const selected = this.selected;
+                this.$router.push({name:"UserList", query: {repos: selected}});
             }
         },
         created() {

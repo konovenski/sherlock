@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
   lintOnSave: false,
   runtimeCompiler: true,
+  outputDir: path.resolve(__dirname, "./docs"),
   configureWebpack: {
     resolve: {
       alias: {
