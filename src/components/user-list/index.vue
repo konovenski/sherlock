@@ -77,13 +77,15 @@
             },
             list: async function () {
                 this.loading = true;
+                let promises = [];
                 for (const repo of this.repos) {
-                    await this.$store
+                    promises.push(this.$store
                         .dispatch(COMMIT_REQUEST, {
                             user: this.$store.getters.credentials,
                             repo: repo, maxDays: dayDiff(this.date) + 1,
-                        });
+                        }));
                 }
+                await Promise.all(promises);
 
                 const commits = Object.values(this.$store.getters.commits).flat().filter((el) => {
                     return new Date(el.date).toDateString() === this.date.toDateString();
