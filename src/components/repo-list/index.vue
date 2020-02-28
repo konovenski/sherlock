@@ -9,6 +9,7 @@
                 <div v-for="workspace in workspaces" :key="workspace.name">
                     <h2>{{workspace.name}}</h2>
                     <input type="checkbox" :value="workspace.name" v-on:click="toggle">
+                    <label><b>Select All</b></label>
                     <div v-for="repo in repos" :key="repo.uuid">
                         <input type="checkbox" v-model="selected" :value="repo.full_name" @change="saveSelected"/>
                         <label>{{repo.full_name}}</label>
