@@ -4,7 +4,7 @@
             <h1>Select repositories to inspect:</h1>
             <form @submit.prevent="inspect">
                 <div v-for="repo in repos" :key="repo.uuid">
-                    <input type="checkbox" v-model="selected" :value="repo.full_name"/>
+                    <input type="checkbox" v-model="selected" :value="repo.full_name" @change="saveSelected" />
                     <label>{{repo.full_name}}</label>
                 </div>
                 <hr/>
@@ -26,11 +26,14 @@
             return {
                 loading: false,
                 repos: this.$store.getters.repos || [],
-                selected: [],
+                selected: JSON.parse(localStorage.getItem('repo-list:selected')) || [],
                 date: "",
             }
         },
         methods: {
+            saveSelected: function() {
+                localStorage.setItem('repo-list:selected', JSON.stringify(this.selected));
+            },
             getRepos: async function () {
                 this.loading = true;
                 try {
