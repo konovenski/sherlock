@@ -2,13 +2,17 @@
     <div>
         <div v-if="!loading">
             <h1>Select repositories to inspect:</h1>
-            <input type="checkbox" v-on:click="toggleAll">
+            <input type="checkbox" value="all" v-on:click="toggleAll">
             <label>Select All</label>
             <br><br>
             <form @submit.prevent="inspect">
-                <div v-for="repo in repos" :key="repo.uuid">
-                    <input type="checkbox" v-model="selected" :value="repo.full_name" @change="saveSelected"/>
-                    <label>{{repo.full_name}}</label>
+                <div v-for="workspace in workspaces" :key="workspace.name">
+                    <h2>{{workspace.name}}</h2>
+                    <input type="checkbox" :value="workspace.name" v-on:click="toggle">
+                    <div v-for="repo in repos" :key="repo.uuid">
+                        <input type="checkbox" v-model="selected" :value="repo.full_name" @change="saveSelected"/>
+                        <label>{{repo.full_name}}</label>
+                    </div>
                 </div>
                 <hr/>
                 <input type="date" v-model="date"/> <br><br>
@@ -34,11 +38,21 @@
             }
         },
         methods: {
-            toggleAll: function (event) {
+            toggleAll: function(event) {
                 if (!event.target.checked) {
                     this.selected = [];
                 } else {
-                    this.selected = this.repos.map(el => el.full_name);
+                    this.selected = this.repos.map(e => e.full_name);
+                }
+                this.saveSelected();
+            },
+            toggle: function (event) {
+                let workspace = event.target.value;
+
+                if (!event.target.checked) {
+                    this.selected = this.selected.filter(el => !this.workspaces[workspace].repos.includes(el));
+                } else {
+                    this.selected = this.selected.concat(this.workspaces[workspace].repos);
                 }
                 this.saveSelected();
             },
@@ -64,6 +78,22 @@
         created() {
             if (!this.$store.getters.cached) {
                 this.getRepos();
+            }
+        },
+        computed: {
+            workspaces: function () {
+                let workspaces = {};
+                for (const repo of this.repos) {
+                    const spaceName = repo.full_name.split('/')[0];
+                    if (workspaces[spaceName] === undefined) {
+                        workspaces[spaceName] = {
+                            name: spaceName,
+                            repos: []
+                        }
+                    }
+                    workspaces[spaceName].repos.push(repo.full_name);
+                }
+                return workspaces;
             }
         }
     }
