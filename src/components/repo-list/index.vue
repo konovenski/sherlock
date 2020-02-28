@@ -2,9 +2,12 @@
     <div>
         <div v-if="!loading">
             <h1>Select repositories to inspect:</h1>
+            <input type="checkbox" v-on:click="toggleAll">
+            <label>Select All</label>
+            <br><br>
             <form @submit.prevent="inspect">
                 <div v-for="repo in repos" :key="repo.uuid">
-                    <input type="checkbox" v-model="selected" :value="repo.full_name" @change="saveSelected" />
+                    <input type="checkbox" v-model="selected" :value="repo.full_name" @change="saveSelected"/>
                     <label>{{repo.full_name}}</label>
                 </div>
                 <hr/>
@@ -31,7 +34,15 @@
             }
         },
         methods: {
-            saveSelected: function() {
+            toggleAll: function (event) {
+                if (!event.target.checked) {
+                    this.selected = [];
+                } else {
+                    this.selected = this.repos.map(el => el.full_name);
+                }
+                this.saveSelected();
+            },
+            saveSelected: function () {
                 localStorage.setItem('repo-list:selected', JSON.stringify(this.selected));
             },
             getRepos: async function () {
